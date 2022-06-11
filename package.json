@@ -1,0 +1,32 @@
+{
+  "name": "elemental-orm",
+  "version": "0.0.1-beta.0",
+  "description": "",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "scripts": {
+    "build": "swc src -d lib && npm run build:types",
+    "build:dev": "npm run build && NODE_ENV=development node --inspect lib/index.js",
+    "build:types": "tsc -d -p tsconfig.json",
+    "dev": "nodemon --ext ts --exec \"npm run build:dev\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/macintoshhelper/elemental-orm.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/macintoshhelper/elemental-orm/issues"
+  },
+  "homepage": "https://github.com/macintoshhelper/elemental-orm#readme",
+  "devDependencies": {
+    "@swc/cli": "^0.1.57",
+    "@swc/core": "^1.2.197",
+    "nodemon": "^2.0.16",
+    "pg-promise": "^10.11.1",
+    "typescript": "^4.7.3"
+  }
+}
