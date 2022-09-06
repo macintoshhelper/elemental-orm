@@ -1,12 +1,15 @@
 {
   "name": "elemental-orm",
-  "version": "0.0.1-beta.0",
+  "version": "0.0.2",
   "description": "",
   "main": "lib/index.js",
+  "module": "lib/module/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "build": "swc src -d lib && npm run build:types",
+    "clean": "rm -rf lib/",
+    "build": "npm run clean && swc src -d lib && npm run build:types && npm run build:module",
     "build:dev": "npm run build && NODE_ENV=development node --inspect lib/index.js",
+    "build:module": "swc src -d lib/module -C module.type=es6",
     "build:types": "tsc -d -p tsconfig.json",
     "dev": "nodemon --ext ts --exec \"npm run build:dev\"",
     "test": "echo \"Error: no test specified\" && exit 1"

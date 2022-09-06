@@ -5,6 +5,8 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "module": "esnext",
     "target": "es5",
+    "declaration": true,
+    "emitDeclarationOnly": true,
 
     "allowJs": true,
     "allowSyntheticDefaultImports": true,

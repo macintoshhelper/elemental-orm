@@ -1,6 +1,6 @@
 import * as models from './models';
 
-const getRepository = (Entity: typeof models.Model, db: any, pg: any) => {
+const getRepository = (Entity: /*typeof models.Model*/any, db: any, pg: any) => {
   const instance = new Entity(db, pg);
 
   return instance;

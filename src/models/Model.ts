@@ -50,10 +50,16 @@ export type ObjectsType = {
 const aliasSqlFields = (fields: any, tableName: string) => Object.keys(fields).map((id, i) =>
   `${tableName}.${camelToSnakeCase(id)} AS "${tableName}.${id}"`);
 
+type Metadata = {
+  name?: string,
+  cs?: any,
+  db_table?: string,
+};
 class Model {
   // [key: string]: Field;
-  [index: string]: any
+  // [index: string]: any
 
+  Meta: Metadata = {};
   save: () => void = () => {};
 
   // pg: 
@@ -64,18 +70,17 @@ class Model {
     this.pg = pg;
   }
 
-  __meta: {
-    name?: string,
-    cs?: any,
-    db_table?: string,
-  } = {};
+  __meta: Metadata = {};
 
   getMeta() {
     if (!this.__meta && this.Meta) {
       this.__meta = this.Meta;
     }
 
-    return this.__meta || this.Meta || {};
+    return {
+      ...this.__meta,
+      ...this.Meta,
+    };
   }
 
   getTableName() {
@@ -85,7 +90,7 @@ class Model {
   }
 
   getFields() {
-    const { objects, save, getTableName, __meta, Meta, ...fields } = this;
+    const { objects, save, getTableName, pg, db, __meta, Meta, ...fields } = this;
 
     return fields;
   }
@@ -95,7 +100,7 @@ class Model {
     const tableName = this.getTableName();
 
     return Object.keys(fields).filter((field) => {
-      const val = fields[field];
+      const val = (fields as any)[field];
       return val.metadata.type.includes('REFERENCES');
     });
   }
@@ -106,7 +111,7 @@ class Model {
     const primaryKeyFields = this.getPrimaryKeyFields();
 
     primaryKeyFields.forEach((k: any) => {
-      const field = fields[k];
+      const field = (fields as any)[k];
       const instanceFields = field.metadata.toInstance.getFields();
 
       Object.keys(instanceFields)
@@ -125,7 +130,7 @@ class Model {
     const primaryKeyFields = this.getPrimaryKeyFields();
 
     const sql = primaryKeyFields.map((field) => {
-      const { metadata } = fields[field];
+      const { metadata } = (fields as any)[field];
       return `LEFT JOIN ${metadata.to} ON ${tableName}.${camelToSnakeCase(field)} = ${metadata.to}.id`;
     }).join('\n');
 
@@ -208,7 +213,7 @@ class Model {
       .reduce((acc: any, k) => { acc[camelToSnakeCase(k)] = _args[k]; return acc;}, {});
 
       const cs = new pg.helpers.ColumnSet(
-        Object.keys(args).map(arg => ({ name: arg, mod: fields[snakeToCamelCase(arg)].metadata.mod })),
+        Object.keys(args).map(arg => ({ name: arg, mod: (fields as any)[snakeToCamelCase(arg)].metadata.mod })),
         { table: tableName }
       );
 
@@ -217,7 +222,7 @@ class Model {
 
       log.debug({ query });
 
-      return flattenSqlValues(await db.any(query))[0];
+      return flattenSqlValues(await db.oneOrNone(query))[0];
     },
     bulkCreate: async (_values: any) => {
       const { pg, db } = this;
@@ -243,7 +248,7 @@ class Model {
         // .filter((n) => n !== 'id' && Object.keys(fields).includes(n));
       log.debug({ values, csArgs });
       const cs = new pg.helpers.ColumnSet(
-        Object.keys(csArgs).map(arg => ({ name: arg, mod: fields[snakeToCamelCase(arg)].metadata.mod })),
+        Object.keys(csArgs).map(arg => ({ name: arg, mod: (fields as any)[snakeToCamelCase(arg)].metadata.mod })),
         { table: tableName }
       );
       log.debug({ values, csArgs, cs })
@@ -253,7 +258,7 @@ class Model {
 
       log.debug({ query });
 
-      await db.none(query);
+      return await db.manyOrNone(query);
     },
     update: async (_args: any, whereFilter: any) => {
       const { db, pg } = this;
@@ -269,7 +274,7 @@ class Model {
         .reduce((acc: any, k) => { acc[camelToSnakeCase(k)] = _args[k]; return acc;}, {});
 
       const cs = new pg.helpers.ColumnSet(
-        Object.keys(args).map(arg => ({ name: arg, mod: fields[snakeToCamelCase(arg)].metadata.mod })),
+        Object.keys(args).map(arg => ({ name: arg, mod: (fields as any)[snakeToCamelCase(arg)].metadata.mod })),
         { table: tableName }
       );
       log.debug(JSON.stringify({ args, cs }, null, 2));
@@ -285,6 +290,11 @@ class Model {
       
       log.debug({ update });
       return flattenSqlValues(await db.query(update));
+    },
+    total: async () => {
+      const { db } = this;
+      const rowCount = await db.one(`SELECT count(*) FROM ${this.getTableName()}`, [], (a: { count: string }) => +a.count);
+      return rowCount;
     },
     filter: async (args: any) => {
       const { db, pg } = this;
