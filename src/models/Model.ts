@@ -200,7 +200,8 @@ class Model {
       const query = `DELETE FROM ${tableName} WHERE ${whereArgs}`;
 
       log.debug({ query, whereArgs });
-      return await db.result(query, (a: any) => a.rowCount);
+      let rowCount = await db.oneOrNone(query, [], (a: { count: string }) => +a.count);
+      return rowCount;
     },
     create: async (_args: any) => {
       const { db, pg } = this;

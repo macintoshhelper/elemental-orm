@@ -1,5 +1,5 @@
 import { IntegerField } from './IntegerField';
-import { FieldMetadata } from './types';
+import { FieldMetadata, ForeignKeyTo } from './types';
 
 class ForeignKey extends IntegerField {
   metadata: FieldMetadata = {
@@ -11,6 +11,12 @@ class ForeignKey extends IntegerField {
   constructor(options: FieldMetadata) {
     super(options);
 
+    if (typeof options.to === 'function') {
+      const toInstance = new options.to({} as any, {} as any);
+
+      this.metadata.to = toInstance.getTableName();
+      this.metadata.toInstance = toInstance;
+    }
     if (typeof options.to === 'object') {
       const toInstance = options.to;
 
@@ -28,4 +34,4 @@ class ForeignKey extends IntegerField {
   }
 }
 
-export default (to: string, options?: any) => new ForeignKey({ to, ...options });
+export default (to: ForeignKeyTo, options?: any) => new ForeignKey({ to, ...options });
