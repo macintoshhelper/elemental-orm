@@ -1,12 +1,20 @@
-import Field from '../Field';
+import Field, { FieldOptions } from '../Field';
+import { FieldMetadata } from './types';
+
+export type IntegerFieldMetadata = FieldMetadata & {
+  __jsType: 'number',
+};
+
 
 export class IntegerField extends Field {
-  constructor(options: any) {
-    super(options);
-  }
+  metadata: IntegerFieldMetadata = {
+    __jsType: 'number',
+    type: 'INTEGER',
+    constraints: [],
+  };
 
-  dbType() {
-    return 'INTEGER';
+  constructor(options: FieldOptions) {
+    super(options);
   }
 }
 
