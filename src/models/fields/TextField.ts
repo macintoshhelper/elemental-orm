@@ -1,14 +1,17 @@
-import Field from '../Field';
+import Field, { FieldOptions } from '../Field';
 import { FieldMetadata } from './types';
 
+type TextFieldMetadata = FieldMetadata & { __jsType: 'string' };
+
 class TextField extends Field {
-  metadata: FieldMetadata = {
+  metadata: TextFieldMetadata = {
+    __jsType: 'string',
     type: 'TEXT',
     constraints: [],
     // mod: ':value',
   };
 
-  constructor(options: any) {
+  constructor(options: FieldOptions) {
     super(options);
   }
 }

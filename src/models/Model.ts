@@ -154,7 +154,7 @@ class Model {
   }
 
   objects = {
-    all: async () => {
+    all: async <T>(): Promise<T> => {
       const { db } = this;
       const fields = this.getFields();
       const tableName = this.getTableName();
@@ -167,11 +167,9 @@ class Model {
 
       const res = flattenSqlValues(values);
 
-      // log.debug({ query, res: res[0] });
-
       return res;
     },
-    get: async (args: any) => {
+    get: async <T>(args: { [key: string]: unknown }): Promise<T> => {
       const { db, pg } = this;
       const fields = this.getFields();
       const tableName = this.getTableName();
@@ -188,7 +186,7 @@ class Model {
 
       return res;
     },
-    delete: async (args: any) => {
+    delete: async (args: { [key: string]: unknown }): Promise<number> => {
       const { db, pg } = this;
       // const fields = this.getFields();
       const tableName = this.getTableName();
@@ -200,10 +198,9 @@ class Model {
       const query = `DELETE FROM ${tableName} WHERE ${whereArgs}`;
 
       log.debug({ query, whereArgs });
-      let rowCount = await db.oneOrNone(query, [], (a: { count: string }) => +a.count);
-      return rowCount;
+      return await db.result(query, [], (r: IResult) => +r.rowCount);
     },
-    create: async (_args: any) => {
+    create: async <T>(_args: { [key: string]: unknown }): Promise<T> => {
       const { db, pg } = this;
       const fields = this.getFields();
       const tableName = this.getTableName();
@@ -292,12 +289,12 @@ class Model {
       log.debug({ update });
       return flattenSqlValues(await db.query(update));
     },
-    total: async () => {
+    total: async (): Promise<number> => {
       const { db } = this;
       const rowCount = await db.one(`SELECT count(*) FROM ${this.getTableName()}`, [], (a: { count: string }) => +a.count);
       return rowCount;
     },
-    filter: async (args: any) => {
+    filter: async <T>(args: any): Promise<T> => {
       const { db, pg } = this;
       const fields = this.getFields();
       const tableName = this.getTableName();

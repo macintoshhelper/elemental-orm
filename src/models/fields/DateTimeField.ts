@@ -1,14 +1,17 @@
-import Field from '../Field';
+import Field, { FieldOptions } from '../Field';
 import { FieldMetadata } from './types';
 
+type DateTimeFieldMetadata = FieldMetadata & { __jsType: 'date' };
+
 class DateTimeField extends Field {
-  metadata: FieldMetadata = {
+  metadata: DateTimeFieldMetadata = {
+    __jsType: 'date',
     type: 'timestamptz',
     constraints: [],
     // mod: ':value',
   };
 
-  constructor(options?: any) {
+  constructor(options?: FieldOptions) {
     super(options);
   }
 }
